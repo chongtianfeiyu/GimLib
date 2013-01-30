@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="40" mouseOver="onMouseOver(event)" mouseOut="onMouseOut(event)" click="onClick(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import core.structs.Floor;
+			[Bindable] public var nameEN:String = "";
+			[Bindable] public var nameCN:String = "";
+			[Bindable] private var textColor:uint = 0;
+			public var floorID:String;
+			private var _isSelected:Boolean = false;
+			public var floor:Floor;
+			public var index:int;
+
+			public function get isSelected():Boolean
+			{
+				return _isSelected;
+			}
+
+			public function set isSelected(value:Boolean):void
+			{
+				_isSelected = value;
+				selectedBackground.visible = isSelected;
+				textColor = isSelected?0xFFFFFF:0;
+			}
+
+			protected function onMouseOver(event:MouseEvent):void
+			{
+				mouseOverBackground.visible = true;
+			}
+			
+			protected function onMouseOut(event:MouseEvent):void
+			{
+				mouseOverBackground.visible = false;
+			}
+			
+			protected function onClick(event:MouseEvent):void
+			{
+				isSelected = !isSelected;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<!-- background normal -->
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="0xEEEEEE"/>
+		</s:fill>
+	</s:Rect>
+	
+	<!-- background on MouseOver -->
+	<s:Rect id="mouseOverBackground" width="100%" height="100%" visible="false">
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0xEEEEEE"/>
+				<s:GradientEntry color="0xAAAAAA"/>
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+	
+	<!-- background on selected -->
+	<s:Rect id="selectedBackground" width="100%" height="100%" visible="false">
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0xFF6314"/>
+				<s:GradientEntry color="0x993300"/>
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+	
+	<s:HGroup width="100%" height="100%" gap="0">
+		<!-- left -->
+		<s:Label id="floorNameEN" width="30%" height="100%" fontWeight="bold" text="{nameEN}"
+				 textAlign="center" verticalAlign="middle" verticalCenter="0" color="{textColor}"/>
+		<!-- line -->
+		<s:Line xFrom="0" yFrom="0" xTo="0" yTo="{height}">
+			<s:stroke>
+				<s:SolidColorStroke color="0xAAAAAA" weight="1"/>
+			</s:stroke>
+		</s:Line>
+		<!-- right -->
+		<s:Label id="floorNameCN" width="70%" height="100%" fontWeight="bold" text="{nameCN}"
+				 textAlign="center" verticalAlign="middle" verticalCenter="0" color="{textColor}"/>
+	</s:HGroup>
+</s:Group>

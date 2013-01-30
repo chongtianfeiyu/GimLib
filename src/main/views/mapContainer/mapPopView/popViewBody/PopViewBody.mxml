@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" mask="{mainMask}" initialize="init(event)" resize="onResize(event)" xmlns:popViewBody="main.views.mapContainer.mapPopView.popViewBody.*">
+	<fx:Script>
+		<![CDATA[
+			import core.structs.Shop;
+			import caurina.transitions.Tweener;
+			
+			import gim.events.GimEvent;
+			
+			import mx.events.FlexEvent;
+			import mx.events.ResizeEvent;
+			import mx.events.StateChangeEvent;
+			
+			private var _shop:Shop;
+			
+			public function get shop():Shop
+			{
+				return _shop;
+			}
+
+			public function set shop(value:Shop):void
+			{
+				_shop = value;
+				if(shop != null)
+				{
+					//将这个shop的信息显示出来
+					descript.text = shop.description["1"];
+					thumbnail.source = shop.images;
+					info.text = "地址:" + shop.address["1"] + " 联系人:" + shop.contact["1"] + " 电话:" + shop.telephone;
+				}else
+				{
+					descript.clearDisplay();
+//					thumbnail.source = [];
+					info.text = "";
+				}
+			}
+
+			protected function onChange(event:StateChangeEvent):void
+			{
+				mainMask.width = this.width;
+				mainMask.height = this.height;
+			}
+			
+			protected function init(event:FlexEvent):void
+			{
+				onChange(null);
+			}
+			
+			protected function onResize(event:ResizeEvent):void
+			{
+				onChange(null);
+			}
+			
+			public function doAnimate():void
+			{
+				Tweener.removeTweens(this);
+				Tweener.addTween(this,{height:bodyHeight,time:1,transition:"easeOutElastic"});
+			}
+			public var bodyHeight:Number = 200;
+			
+			public function clearAnimate():void
+			{
+				Tweener.removeTweens(this);
+				Tweener.addTween(this,{height:0,time:1});
+				this.shop = null;
+			}
+			
+			protected function onThumbnailImageClick(event:MouseEvent):void
+			{
+				this.dispatchEvent(new GimEvent("POPVIEWBODY_THUMBNAILIMAGE_CLICK",this.shop));
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<s:SkinnableContainer id="mainMask" backgroundColor="0xffffff"/>
+	<popViewBody:shopDescriptionSlideText id="descript" top="20" left="20"/>
+	<popViewBody:shopThumbnailImage id="thumbnail" top="20" right="20" click="onThumbnailImageClick(event)"/>
+	<popViewBody:shopInfoText id="info" top="200" horizontalCenter="0"/>
+</s:SkinnableContainer>

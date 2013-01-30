@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:components="main.components.*"
+		 xmlns:views="main.views.*"
+		 xmlns:ed="ed.*"
+		 xmlns:leftViews="main.views.leftViews.*"
+		 xmlns:mapContainer="main.views.mapContainer.*"
+		 xmlns:rightViews="main.views.rightViews.*"
+		 xmlns:imagePlayer="main.views.imagePlayer.*" 
+		 xmlns:cp="core.components.*"
+		 width="1920" height="1080" addedToStage="onAddToStage(event)"
+		 creationComplete="onCreated(event)">
+	<fx:Script>
+		<![CDATA[
+			import core.structs.Category;
+			import core.structs.Shop;
+			import core.structs.NewsType;
+			import core.DataProvider;
+			import gim.events.GimEvent;
+			import gim.tools.GimTools;
+			import main.components.BaseButton;
+			import main.views.mapContainer.MapContainer;
+			import mx.events.FlexEvent;
+			
+			private var categories:Array = [];
+			private var shopList:Array = [];
+			private var newsTypes:Array = [];
+			private var strList:Array = [];
+
+			public function get dataProvider():DataProvider
+			{
+				return _dataProvider;
+			}
+
+			/**
+			 * set dataProvider for initialization
+			 * */
+			public function set dataProvider(value:DataProvider):void
+			{
+				_dataProvider = value;
+				
+				mapContainer.dataProvider 		= dataProvider;					//设置并初始化地图
+				leftView.slideMenu.data 		= dataProvider.ObjCategories;	//设置左边的滑动菜单
+				leftView.mainMenu.data			= dataProvider.ObjParts;
+				leftView.mainMenu.languageData	= dataProvider.ObjLanguages;
+				mapContainer.mapControlPanel.data= dataProvider.ObjFloors;		//设置楼层操作面板
+				rightView.dataProvider 			= dataProvider;
+				adPlayer.playList 				= dataProvider.adUrls;
+				mapContainer.adLogoPlayer.playList = dataProvider.adLogos;
+			}
+			private var _dataProvider:DataProvider;
+			
+			protected function onCreated(event:FlexEvent):void
+			{
+				this.dataProvider = AppConfig.instance.dataProvider;
+				addEventListeners();
+			}
+			
+			private function addEventListeners():void
+			{
+				this.addEventListener(MouseEvent.CLICK,onClick);
+				this.addEventListener(GimEvent.RIGHT_VIEW_CLOSED,onRightViewClosed);
+				this.addEventListener("RIGHT_VIEW_CONTENT_CLICKED",onRightViewContentClick);
+				this.addEventListener("POPVIEWBODY_THUMBNAILIMAGE_CLICK",onPopViewBodyThumbnailImageClick);
+				this.addEventListener("BASEBUTTON_CLICK",onBaseButtonClick);
+				this.addEventListener("SLIDEPOPVIEW_BUTTONLIST_CLICKED",onSlidePopViewButtonListClick);
+			}
+			
+			protected function onRightViewClosed(event:Event):void
+			{
+				leftView.mainMenu.unSelectAll();
+			}
+			
+			protected function onClick(event:MouseEvent):void
+			{
+				leftView.mainMenu.unSelectAll();
+				leftView.slideMenu.buttonList.unSelectAll();
+				rightView.hideAllView();
+			}
+			
+			protected function onRightViewContentClick(event:Event):void
+			{
+				leftView.slideMenu.buttonList.unSelectAll();
+				slidePopView.hide();
+			}
+			
+			protected function onPopViewBodyThumbnailImageClick(event:GimEvent):void
+			{
+				var shop:Shop = event.data as Shop;
+				imageViewer.viewShopImages(shop.images);
+			}
+			
+			/**
+			 * 左边导航按钮的点击事件
+			 * */
+			protected function onBaseButtonClick(event:GimEvent):void
+			{
+				strList = [];
+				currentActiveBaseButton = event.data as BaseButton;
+				if(currentActiveBaseButton.isNewsTypeButton)		//为下面的几个按钮	
+				{
+					if(currentActiveBaseButton.index == 0)			//为新闻按钮
+					{
+						for each(var newsType:NewsType in dataProvider.ObjNewsTypes)
+						{
+							newsTypes.push(newsType);
+							strList.push(newsType.name[AppConfig.instance.currentLanguageID]);
+						}
+					}
+					else
+					{
+						rightView.visibleIndex = currentActiveBaseButton.index;				//显示其他三个按钮
+						return;
+					}
+				}
+				else
+				{
+					for each(var category:Category in dataProvider.ObjCategories)
+					{
+						categories.push(category);
+					}
+					shopList = categories[currentActiveBaseButton.index].subShops;
+					for(var i:int = 0;i < shopList.length;i ++)
+					{
+						var shop:Shop = shopList[i];
+						strList.push(shop.name["1"]);
+					}
+				}
+				
+				var point:Point = currentActiveBaseButton.parent.localToGlobal(new Point(currentActiveBaseButton.x,currentActiveBaseButton.y));
+				point = this.globalToLocal(point);
+				
+				slidePopView.showList(strList,point.y);
+			}
+			private var currentActiveBaseButton:BaseButton;
+			
+			/**
+			 * 点击商店分类弹出菜单的某个按钮处理函数
+			 * */
+			protected function onSlidePopViewButtonListClick(event:GimEvent):void
+			{
+				leftView.slideMenu.buttonList.unSelectAll();
+				slidePopView.hide();
+				
+				var index:int = event.data as int;
+				
+				if(index == -1) return;
+				
+				if(currentActiveBaseButton.isNewsTypeButton)
+				{
+					//显示新闻
+					rightView.showNewsTypeView(newsTypes[index]);
+				}
+				else
+				{
+					//显示地图弹出框
+					leftView.mainMenu.unSelectAll();
+					rightView.hideAllView();
+					mapContainer.selectPlaceAndShowInfo(shopList[index].place);
+				}
+			}
+			
+			protected function onAddToStage(event:Event):void
+			{
+				GimTools.adaptSizeToParent(this);
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<!-- 地图模块 -->
+	<mapContainer:MapContainer id="mapContainer" x="330"/>
+	
+	<!-- 左边导航主模块和右边主模块 -->
+	<s:HGroup x="0" y="0" width="100%" height="100%" gap="0">
+		<leftViews:LeftMainView id="leftView" width="330" height="100%"/>
+		<rightViews:RightMainView id="rightView" width="1590" height="100%"/>
+	</s:HGroup>
+	
+	<!-- 左边业态分类点击后可滑动的弹出框,用于展示分类下的店铺以及新闻 -->
+	<views:SlidePopView id="slidePopView" visible="false" left="330"/>
+	
+	<!-- 图片预览模块 -->
+	<imagePlayer:ImageViewer id="imageViewer" width="100%" height="100%"/>
+	
+	<!-- 全屏广告模块 -->
+	<cp:ADPlayer id="adPlayer" width="100%" height="100%" defaultDelay="{AppConfig.instance.adWaitTime}"/>
+</s:Group>

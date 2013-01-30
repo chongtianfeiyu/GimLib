@@ -1,0 +1,21 @@
+<config>
+	<title>神农太阳城电子导购系统</title>
+	<server>http://211.154.128.33/shenlong/</server>
+	<asmx>http://211.154.128.33/shenlong/webService.asmx/</asmx>
+	<update>0</update>
+	<cache>cache/</cache>
+	<weather>http://www.webxml.com.cn/WebServices/WeatherWebService.asmx/getWeatherbyCityName</weather>
+	<!-- 全屏广告的等待时间,单位为毫秒,1s = 1000ms -->
+	<adWaitTime>16000</adWaitTime>
+	<!-- set map -->
+	<cameraDistance>1200</cameraDistance>
+	<maxCameraDistance>1800</maxCameraDistance>
+	<minCameraDistance>450</minCameraDistance>
+	<placeBaseHeight>16</placeBaseHeight>
+	<minRotationX>-90</minRotationX>
+	<maxRotationX>0</maxRotationX>
+	<defaultRotationX>-50</defaultRotationX>
+	<defaultRotationZ>0</defaultRotationZ>
+	<placeFocusColor>0xCCFF33</placeFocusColor>
+	<initializeDeviceNodeID>2012-12-05_16:56:45_3423_5847</initializeDeviceNodeID>
+</config>

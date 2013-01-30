@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:components="main.components.*"
+		 width="330" height="202" xmlns:independent="main.components.independent.*">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Image horizontalCenter="0" source="main/assist/imgs/logo.png" verticalCenter="-20"/>
+	<independent:Clock bottom="0" width="120" height="46" horizontalCenter="0"/>
+</s:Group>

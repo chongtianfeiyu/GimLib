@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Panel xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="600" height="319" creationComplete="onCreated(event)" initialize="init(event)"
+		 mouseDown="onTitleMouseDown(event)" mouseUp="onTitleMouseUp(event)" title="Debugger">
+	<fx:Script>
+		<![CDATA[
+			import adobe.utils.ProductManager;
+			
+			import flash.events.KeyboardEvent;
+			import flash.filters.DropShadowFilter;
+			
+			import flashx.textLayout.elements.TextRange;
+			import flashx.textLayout.formats.TextLayoutFormat;
+			
+			import mx.core.Application;
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			
+			import spark.components.WindowedApplication;
+			
+			/////////////////////////////////////////////////////////////
+			static private var debugger:Debugger;
+			static public function getInstance():Debugger
+			{
+				if(!debugger) debugger = new Debugger();
+				return debugger;
+			}
+			/////////////////////////////////////////////////////////////
+			
+			private var _isMinimize:Boolean = false;
+			private var currentCommandStr:String = "";
+			public var app:WindowedApplication;
+			
+			protected function init(event:FlexEvent):void
+			{
+				textLayoutFormat = new TextLayoutFormat();
+				textLayoutFormat.color = 0x99cc33;					//这里有问题,暂时能用
+				textLayoutFormat.fontFamily = "Arial";
+				if(!Debugger.debugger) Debugger.debugger = this;	//单例的权宜之计,应做仔细考量
+				print("- GimDebugger V1.0,WELCOME!欢迎!");
+				this.textArea.addEventListener(KeyboardEvent.KEY_UP,onInput);
+			}
+			
+			public function print(obj:*):void
+			{
+				this.textArea.appendText(obj.toString() + "\n>");
+				textArea.scroller.verticalScrollBar.value = textArea.scroller.verticalScrollBar.maxHeight;
+				textArea.setFormatOfRange(textLayoutFormat,textArea.text.length,0);
+			}
+
+			public function get isMinimize():Boolean
+			{
+				return _isMinimize;
+			}
+
+			public function set isMinimize(value:Boolean):void
+			{
+				_isMinimize = value;
+				if(isMinimize)
+				{
+					height = 32;
+					textArea.visible = false;
+					minBtn.visible = false;
+					maxBtn.visible = true;
+				}else
+				{
+					height = 319;
+					textArea.visible = true;
+					minBtn.visible = true;
+					maxBtn.visible = false;
+				}
+			}
+
+			protected function onTitleMouseDown(event:MouseEvent):void
+			{
+				startDrag();
+			}
+			
+			protected function onTitleMouseUp(event:MouseEvent):void
+			{
+				stopDrag();
+			}
+			
+			protected function switchSize(event:MouseEvent):void
+			{
+				isMinimize = !isMinimize;
+			}
+			
+			private	var textFormt:TextLayoutFormat;
+			private var textLayoutFormat:TextLayoutFormat;
+			protected function onCreated(event:FlexEvent):void
+			{
+				isMinimize = false;
+			}
+			
+			protected function onTextAreaMouseDown(event:MouseEvent):void
+			{
+				event.stopPropagation();
+				textArea.selectRange(textArea.text.length,textArea.text.length);
+				textArea.scroller.verticalScrollBar.value = textArea.scroller.verticalScrollBar.maxHeight;
+			}
+			
+			protected function onInput(event:KeyboardEvent):void
+			{
+				var charCode:int = event.charCode;
+				//8:删除一个字符,
+				switch(event.charCode)
+				{
+					case 8:			//删除字符
+						currentCommandStr = currentCommandStr.substr(0,currentCommandStr.length - 2);
+						break;
+					case 13:		//回车
+						executeCommand();
+						break;
+					default:
+						currentCommandStr += String.fromCharCode(charCode);
+						break;
+				}
+			}
+			
+			private function executeCommand():void
+			{
+				var t:Array = currentCommandStr.split(" ");
+				currentCommandStr = t[0];
+				switch(currentCommandStr)
+				{
+					case "help":
+						print("- Command list:\n- cls | reset | minimize | setcolor uint | help | exit " + textArea.getStyle("color"));
+						break;
+					case "cls":
+						textArea.text = ">";
+						break;
+					case "reset":
+						break;
+					case "minimize":
+						isMinimize = true;
+						print("- Command minimize executing...");
+						break;
+					case "setcolor":
+						textLayoutFormat.color = uint(t[1]?t[1]:0x006400);
+//						var tr:TextRange = new TextRange(textArea.textFlow,textArea.text.length,0);
+						print("- Command setcolor executing...");
+						break;
+					case "exit":
+						textArea.text = "";
+						if(app) app.exit();
+						this.visible = false;
+						break;
+					default:
+						print("- No Command named " + currentCommandStr + ",input \"help\" for help.");
+						break;
+				}
+				currentCommandStr = "";
+				textArea.selectRange(textArea.text.length,textArea.text.length);
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:TextArea id="textArea" x="0" y="0" width="598" height="286" borderColor="#D9D9D9"
+				borderVisible="true" contentBackgroundAlpha="1.0" contentBackgroundColor="#282828"
+				focusThickness="0" fontFamily="Arial" fontSize="12"
+				mouseDown="onTextAreaMouseDown(event)"/>
+	<s:Image id="minBtn" right="6" top="-24" width="16" height="16" click="switchSize(event)"
+			 source="@Embed('main/components/icons/min.png')"/>
+	<s:Image id="maxBtn" right="6" top="-24" width="16" height="16" click="switchSize(event)"
+			 source="@Embed('main/components/icons/max.png')"/>
+</s:Panel>

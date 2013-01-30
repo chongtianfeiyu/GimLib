@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="180" height="160">
+	<fx:Script>
+		<![CDATA[
+			private var _source:Array;
+
+			public function get source():Array
+			{
+				return _source;
+			}
+
+			public function set source(value:Array):void
+			{
+				_source = value;
+				var url:String = AppConfig.instance.cache + source[0];
+				image.source = url;
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Image id="image" width="180" height="160"/>
+</s:Group>

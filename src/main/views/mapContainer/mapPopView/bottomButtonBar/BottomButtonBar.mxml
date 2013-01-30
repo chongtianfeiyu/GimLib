@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:bottomButtonBar="main.views.mapContainer.mapPopView.bottomButtonBar.*"
+		 width="200" height="30" creationComplete="onCreated(event)" initialize="init(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			protected function init(event:FlexEvent):void
+			{
+				this.addEventListener("BTN_CLICKED",onClick);
+			}
+			
+			protected function onCreated(event:FlexEvent):void
+			{
+				drawMask();
+				drawTriangel();
+				var w:Number = btnBar.width / btnBar.columnCount;
+				for(var i:int = 0;i < btnBar.columnCount;i ++)
+				{
+					var item:BottomButtonBarButton = btnBar.getElementAt(i) as BottomButtonBarButton;
+					item.height = btnBar.height;
+					item.width = w;
+				}
+			}
+			
+			protected function onClick(event:Event):void
+			{
+				unSelecteAll();
+				var bbbb:BottomButtonBarButton = event.target as BottomButtonBarButton;
+				selectedIndex = btnBar.getElementIndex(bbbb);
+			}
+			
+			public	var triangelSize:int = 10;
+			private function drawTriangel():void
+			{
+				triangel.graphics.beginFill(selectedColor,1);
+				triangel.graphics.lineTo(triangelSize,0);
+				triangel.graphics.lineTo(0,-triangelSize);
+				triangel.graphics.lineTo(-triangelSize,0);
+				triangel.graphics.lineTo(0,0);
+			}
+			
+			private function drawMask():void
+			{
+				mainMask.graphics.beginFill(0,1);
+				mainMask.graphics.drawRoundRect(0,0,this.width,this.height,this.height,this.height);
+				mainMask.graphics.endFill();
+			}
+			
+			private function setTriangelPosition():void
+			{
+				triangel.x = selectedIndex * btnBar.width / btnBar.columnCount + (btnBar.width / btnBar.columnCount * 0.5);
+			}
+			
+			private var _selectedIndex:int = 0;
+			public function get selectedIndex():int
+			{
+				return _selectedIndex;
+			}
+
+			public function set selectedIndex(value:int):void
+			{
+				_selectedIndex = value;
+				unSelecteAll();
+				var item:BottomButtonBarButton = btnBar.getElementAt(value) as BottomButtonBarButton;
+				item.isSelected = true;
+				setTriangelPosition();
+			}
+			
+			private function unSelecteAll():void
+			{
+				for(var i:int = 0;i < btnBar.columnCount;i ++)
+				{
+					var item:BottomButtonBarButton = btnBar.getElementAt(i) as BottomButtonBarButton;
+					item.isSelected = false;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<mx:UIComponent id="mainMask"/>
+		<fx:uint id="selectedColor">0</fx:uint>
+	</fx:Declarations>
+	<s:HGroup id="btnBar" width="100%" height="100%" gap="0" mask="{mainMask}">
+		<bottomButtonBar:BottomButtonBarButton label="btn_1" isSelected="true"
+											   selectedColor="{selectedColor}"/>
+		<bottomButtonBar:BottomButtonBarButton label="btn_1" isSelected="false"
+											   selectedColor="{selectedColor}"/>
+	</s:HGroup>
+	<mx:UIComponent id="triangel"/>
+</s:Group>

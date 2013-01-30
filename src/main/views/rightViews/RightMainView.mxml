@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:rightViews="main.views.rightViews.*"
+		 xmlns:views="main.views.*"
+		 xmlns:patterns="main.components.patterns.*"
+		 xmlns:independent="main.components.independent.*"
+		 creationComplete="onCreated(event)">
+	<fx:Script>
+		<![CDATA[
+			import core.structs.NewsType;
+			import core.DataProvider;
+			import caurina.transitions.Tweener;
+			
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			private var _visibleIndex:int;
+			private var _dataProvider:DataProvider;
+			
+			public function get dataProvider():DataProvider
+			{
+				return _dataProvider;
+			}
+
+			public function set dataProvider(value:DataProvider):void
+			{
+				_dataProvider = value;
+				
+				mallService.swfSource = AppConfig.instance.cache + dataProvider.ObjParts["2"].source["1"];
+				trafficMap.swfSource = AppConfig.instance.cache + dataProvider.ObjParts["3"].source["1"];
+				mallOverview.swfSource = AppConfig.instance.cache + dataProvider.ObjParts["4"].source["1"];
+			}
+
+			protected function onCreated(event:FlexEvent):void
+			{
+				hideAllView();
+			}
+
+			public function get visibleIndex():int
+			{
+				return _visibleIndex;
+			}
+
+			public function set visibleIndex(value:int):void
+			{
+				_visibleIndex = value;
+				hideAllView();
+				if(visibleIndex < this.numElements)
+				{
+					var item:UIComponent = this.getElementAt(_visibleIndex) as UIComponent;
+					if(!item.visible) 
+						item.visible = true;
+					Tweener.removeTweens(item);
+					item.alpha = 0.5;
+					Tweener.addTween(item,{alpha:1,time:1});
+				}
+			}
+
+			public function hideAllView():void
+			{
+				for(var i:int = 0;i < this.numElements;i ++)	//排除discounts
+				{
+					var item:UIComponent = this.getElementAt(i) as UIComponent;
+					if(item.visible) item.visible = false;
+					item.alpha = 1;
+				}
+			}
+			
+			public function showNewsTypeView(newsType:NewsType):void
+			{
+				discounts.show(newsType);
+//				discounts.newsType = newsType;
+//				discounts.webBrowser.visible = false;
+				this.visibleIndex = 0;
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<!-- 优惠活动 
+	<rightViews:EventsView id="discounts"/>
+	-->
+	<rightViews:DiscountsView id="discounts"/>
+	
+	<!-- 服务 -->
+	<rightViews:MallServiceView id="mallService"/>
+	
+	<!-- 交通 -->
+	<rightViews:TrafficMapView id="trafficMap"/>
+	
+	<!-- 关于 -->
+	<rightViews:AboutMallView id="mallOverview"/>
+	
+	<!-- 切换语言 -->
+	<rightViews:LanguageChangView bottom="30"/>
+</s:Group>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:components="main.components.*"
+		 width="100%" initialize="init(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			public var item:Object;
+			[Bindable] public var title:String;
+			[Bindable] public var logoSelected:String;
+			[Bindable] public var logoUnSelected:String;
+			[Bindable] public var labelText:String;
+
+			protected function init(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			public function get selected():Boolean
+			{
+				return btn.selected;
+			}
+			
+			public function set selected(value:Boolean):void
+			{
+				btn.selected = value;
+			}
+			
+			public function get index():int
+			{
+				return btn.index
+			}
+			
+			public function set index(value:int):void
+			{
+				btn.index = value;
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Label x="24" top="16" color="#984800" fontSize="14" fontWeight="bold" text="{title}"/>
+	<components:MainButton isNewsTypeButton="true" id="btn" top="38" horizontalCenter="0" labelText="{labelText}"
+						   logoSelected="{logoSelected}" logoUnSelected="{logoUnSelected}"/>
+</s:Group>

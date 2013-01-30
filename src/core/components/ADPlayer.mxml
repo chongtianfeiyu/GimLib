@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 addedToStage="onAddStage(event)" click="onBackgroundClick(event)"
+		 creationComplete="onCreated(event)" initialize="init(event)">
+	<fx:Script>
+		<![CDATA[
+			import caurina.transitions.Tweener;
+			import flash.utils.clearTimeout;
+			import gim.components.GimMediaPlayer;
+			import mx.events.FlexEvent;
+			
+			protected function init(event:FlexEvent):void
+			{
+			}
+			
+			protected function onCreated(event:FlexEvent):void
+			{
+				container.addChild(mediaPlayer = new GimMediaPlayer(this.width,this.height));
+			}
+			public var mediaPlayer:GimMediaPlayer;
+			
+			public function set playList(value:Array):void
+			{
+				mediaPlayer.playList = value;
+			}
+			
+			protected function onClick(event:MouseEvent):void
+			{
+				wait();
+			}
+			
+			public function wait(delay:int = -1):void
+			{
+				if(delay == -1)
+					delay = defaultDelay;
+				clearTimeout(intervalId);
+				this.visible = false;
+				mediaPlayer.stopPlay();
+				intervalId = setTimeout(play,delay);
+			}
+			private var intervalId:uint = 0;
+			public var defaultDelay:int = 10000;
+			
+			private function play():void
+			{
+				this.visible = true;
+				this.alpha = 0;
+				Tweener.removeTweens(this);
+				Tweener.addTween(this,{alpha:1,time:1});
+				mediaPlayer.playByIndex(mediaPlayer.currentPlayIndex);
+			}
+			
+			protected function onBackgroundClick(event:MouseEvent):void
+			{
+				event.stopImmediatePropagation();
+			}
+			
+			protected function onAddStage(event:Event):void
+			{
+				this.stage.addEventListener(MouseEvent.MOUSE_DOWN,onMouseDown);
+				this.addEventListener(MouseEvent.MOUSE_DOWN,onThisMouseDown);
+			}
+			
+			private function onMouseDown(e:MouseEvent):void
+			{
+				this.wait();
+				AppConfig.instance.log("ADPlayer wait!");
+			}
+			
+			protected function onThisMouseDown(event:MouseEvent):void
+			{
+				event.stopImmediatePropagation();
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<mx:UIComponent id="container"/>
+	<s:Button bottom="48" width="360" height="60" label="点击进入" click="onClick(event)" color="#343434"
+			  cornerRadius="6" fontSize="36" horizontalCenter="0"/>
+</s:Group>

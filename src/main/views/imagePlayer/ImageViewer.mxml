@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:imagePlayer="main.views.imagePlayer.*"
+		 initialize="init(event)" click="onClick(event)">
+	<fx:Script>
+		<![CDATA[
+			import caurina.transitions.Tweener;
+			
+			import gim.events.GimEvent;
+			
+			import mx.events.FlexEvent;
+			
+			protected function init(event:FlexEvent):void
+			{
+				this.close();
+				addEventListeners();
+			}
+			
+			public function viewShopImages(mediaUrls:Array):void
+			{
+				this.visible = true;
+				this.alpha = 0;
+				this.scaleX = this.scaleY = 2;
+				Tweener.removeTweens(this);
+				Tweener.addTween(this,{alpha:1,scaleX:1,scaleY:1,time:0.8,transition:"easeInOutElastic"});
+				shopImageViewer.load(mediaUrls);
+			}
+			
+			public function pause():void
+			{
+				
+			}
+			
+			public function stop():void
+			{
+				
+			}
+			
+			public function close():void
+			{
+				Tweener.removeTweens(this);
+				Tweener.addTween(this,{alpha:0,scaleX:2,scaleY:2,time:0.3,onComplete:function():void{
+					this.scaleX = this.scaleY = 1;
+					this.visible = false;
+				}});
+			}
+			
+			private function addEventListeners():void
+			{
+				this.addEventListener("ON_IMAGEPLAYER_CLOSE",function(e:Event):void{close();});
+			}
+			
+			protected function onClick(event:MouseEvent):void
+			{
+				event.stopPropagation();
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<fx:String id="labelText">点击返回</fx:String>
+	</fx:Declarations>
+	<!-- background -->
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor alpha="0.6" color="0x222222"/>
+		</s:fill>
+	</s:Rect>
+	
+	<!-- ImagePlayer -->
+	<imagePlayer:ShopImageViewer id="shopImageViewer" width="{width * 0.8}" height="80%" horizontalCenter="0"
+							 verticalCenter="0"/>
+	
+	<!-- return map button 在系统全屏播放时显示 
+	这里做个MediaPlayer
+	<mediaPlayer:ReturnMapButton bottom="40" horizontalCenter="0" width="240" height="40" label="{labelText}"/>
+	-->
+	
+</s:Group>

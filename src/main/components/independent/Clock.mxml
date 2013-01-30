@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="130" height="49" initialize="init(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			[Bindable] private var timeStr:String = "00 00";
+			[Bindable] private var color:uint = 0xEEEEEE;
+			private var timer:Timer;
+			private var date:Date;
+			
+			protected function init(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				date = new Date();
+				timer = new Timer(1000);
+				timer.addEventListener(TimerEvent.TIMER,onTimer);
+				timer.start();
+			}
+			
+			protected function onTimer(event:TimerEvent):void
+			{
+				colon.visible = !colon.visible;
+				date = null;
+				date = new Date();
+				var hours:Number = date.hours;
+				var minutes:Number = date.minutes;
+//				var seconds:Number = date.seconds;
+				timeStr = "";
+				timeStr = hours < 10 ? "0" + hours.toString() : hours.toString();
+				timeStr = minutes < 10 ? timeStr + " 0" + minutes.toString() : timeStr = timeStr + " " + minutes.toString();
+//				timeStr = timeStr + seconds.toString();
+				timer.reset();
+				timer.start();
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Image horizontalCenter="0" source="main/assist/imgs/时间底.png" verticalCenter="0"/>
+	<s:Label bottom="-4" color="{color}" fontSize="36"
+			 horizontalCenter="0" text="{timeStr}" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="colon" bottom="0" color="{color}" fontSize="36"
+			 horizontalCenter="0" text=":" textAlign="center" verticalAlign="middle"/>
+</s:Group>

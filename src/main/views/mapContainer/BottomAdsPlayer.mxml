@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="495" height="80">
+	<fx:Script>
+		<![CDATA[
+			public function get playList():Array
+			{
+				return _playList;
+			}
+
+			public function set playList(value:Array):void
+			{
+				_playList = value;
+				playNext();
+			}
+			private var _playList:Array;
+			private var currentIndex:uint = 0;
+
+			private function playNext():void
+			{
+				image.source = _playList[currentIndex];
+				currentIndex ++;
+				if(currentIndex > _playList.length - 1) currentIndex = 0;
+				setTimeout(playNext,5000);
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:SkinnableContainer width="{this.width}" height="{this.height}" backgroundAlpha="0.2"
+						  backgroundColor="0xffffff" horizontalCenter="0" mask="{bgMask}"
+						  verticalCenter="0"/>
+	<s:BorderContainer id="bgMask" width="{this.width}" height="{this.height}" borderVisible="false"
+					   borderWeight="0" cornerRadius="6" horizontalCenter="0" verticalCenter="0"/>
+	<s:Image id="image" horizontalCenter="0" mask="{mainMask}" verticalCenter="0"/>
+	<s:BorderContainer id="mainMask" x="5" y="5" width="{this.width - 10}"
+					   height="{this.height - 10}" borderVisible="false" borderWeight="0"
+					   cornerRadius="4" horizontalCenter="0" verticalCenter="0"/>
+</s:Group>

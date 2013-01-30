@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:mapPopView="main.views.mapContainer.mapPopView.*"
+		 xmlns:bottomButtonBar="main.views.mapContainer.mapPopView.bottomButtonBar.*"
+		 visible="false" creationComplete="onCreated(event)">
+	<fx:Script>
+		<![CDATA[
+			import core.structs.Place;
+			import caurina.transitions.Tweener;
+			
+			import flash.display.GradientType;
+			
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			
+			import spark.filters.DropShadowFilter;
+			
+			public var viewWidth:Number;
+			public var bodyHeight:Number;
+			public var isShow:Boolean = false;
+			
+			/**
+			 * 将各控件放到外面
+			 * title:设置标题栏显示的字符串
+			 * closeButton
+			 * pushButton
+			 * shopInfoView
+			 * shopInfoViewText
+			 * shopInfoViewImages
+			 * 
+			 * show():显示
+			 * hide():隐藏
+			 * */
+			protected function onCreated(event:FlexEvent):void
+			{
+				//set popView
+				popView.rotation = 180;
+				popView.x =popView.width - center;
+				//set buttonBar
+				btnBar.x = popView.x - popView.width * 0.5 - btnBar.width * 0.5;
+				btnBar.selectedIndex = 0;
+				this.filters = [new spark.filters.DropShadowFilter(2,90,0,0.6)];
+				
+				addEventListeners();
+			}
+			
+			/**
+			 * top:标题栏改变
+			 * button:动画效果
+			 * body:如果为店铺,则显示店铺,如果不为店铺,则不显示
+			 * btnBar:如果为店铺,则显示店铺相关页面的按钮,如果不为店铺,则不显示
+			 * */
+			public function show(place:Place):void
+			{
+				isShow = true;
+				this.visible = true;
+				this.alpha = 0;
+				Tweener.removeTweens(this);
+				Tweener.addTween(this,{alpha:1,time:1});
+				
+				//分两种情况为
+				if(place.shop)
+				{
+					popView.showShopInfo(place.shop);
+				}else
+				{
+					popView.showPlaceInfo(place);
+				}
+			}
+			
+			/**
+			 * top:标题栏清理
+			 * button:动画清理
+			 * body:清理
+			 * btnBar:清理
+			 * */
+			public function hide(event:MouseEvent = null):void
+			{
+				isShow = false;
+//				this.visible = false;
+				
+				Tweener.removeTweens(this);
+//				this.alpha = 0;
+				
+				popView.clearDisplay();
+				btnBar.visible = false;
+				
+				Tweener.removeTweens(this);
+				Tweener.addTween(this,{alpha:0,time:1,onComplete:function():void{
+					this.visible = false;
+				}});
+			}
+			
+			protected function stopMouseEvent(event:MouseEvent):void
+			{
+				event.stopPropagation();
+			}
+			
+			private function addEventListeners():void
+			{
+				popView.popTop.closeButton.addEventListener(MouseEvent.CLICK,hide);		//关闭按钮
+				this.addEventListener(MouseEvent.MOUSE_DOWN,stopMouseEvent);
+				this.addEventListener(MouseEvent.CLICK,stopMouseEvent);
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<fx:Number id="center">120</fx:Number>
+	</fx:Declarations>
+	<mapPopView:PopView id="popView" width="420" center="{center}"/>
+	<bottomButtonBar:BottomButtonBar id="btnBar" visible="false" y="-55" width="320" height="35"
+									 selectedColor="0x223344"/>
+</s:Group>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<components:RightViewContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:components="main.components.*">
+	
+	<fx:Script>
+		<![CDATA[
+			override protected function onClick(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				this.removeEventListener(MouseEvent.CLICK,onClick);
+				event.stopPropagation();
+				this.dispatchEvent(new Event("RIGHT_VIEW_CONTENT_CLICKED",true));
+				this.close(null);
+				if(AppConfig.instance.currentLanguageID == "1")
+				{
+					AppConfig.instance.currentLanguageID = "2";
+					button.label = "中文";
+				}
+				else
+				{
+					AppConfig.instance.currentLanguageID = "1";
+					button.label = "English";
+				}
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Button id="button" width="240" height="50" fontSize="18" bottom="10" fontWeight="bold" label="English" click="onClick(event)"/>
+</components:RightViewContainer>

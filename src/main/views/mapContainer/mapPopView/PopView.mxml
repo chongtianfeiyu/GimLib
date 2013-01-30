@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  xmlns:mapPopView="main.views.mapContainer.mapPopView.*"
+		  width="420" height="30" gap="-1" creationComplete="onCreated(event)" xmlns:popViewBody="main.views.mapContainer.mapPopView.popViewBody.*">
+	
+	<fx:Script>
+		<![CDATA[
+			import core.structs.Place;
+			import core.structs.Shop;
+			import caurina.transitions.Tweener;
+			import mx.events.FlexEvent;
+			
+			[Bindable] public var title:String = "";
+
+			public function showPlaceInfo(place:Place):void
+			{
+				title = place.placeTypeName[AppConfig.instance.currentLanguageID];
+				popButton.doAnimate();
+				popBody.clearAnimate();
+				if(place)
+				{
+					popButton.logoSource = popButton.defaultLogo;
+				}
+			}
+			
+			public function showShopInfo(shop:Shop):void
+			{
+				title = shop.name[AppConfig.instance.currentLanguageID];
+				popButton.doAnimate();
+				popBody.clearAnimate();
+				popBody.height = 0;
+				if(shop)
+				{
+					popButton.logoSource = AppConfig.instance.cache + shop.logoURL;
+					popBody.shop = shop;
+					popBody.doAnimate();
+				}
+			}
+			
+			public function clearDisplay():void
+			{
+				popButton.clearAnimate();
+				popBody.clearAnimate();
+			}
+			
+			protected function onCreated(event:FlexEvent):void
+			{
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+		<fx:Number id="center">80</fx:Number>
+		<fx:uint id="colorBegin">0x888888</fx:uint>
+		<fx:uint id="colorEnd">0xEEEEEE</fx:uint>
+		<fx:Number id="radius">10</fx:Number>
+		<fx:Number id="angleSize">10</fx:Number>
+	</fx:Declarations>
+	<mapPopView:PopViewBottom width="{width}" height="60" angelSize="{angleSize}" center="{center}"
+							  colorBegin="{colorBegin}" colorEnd="{colorEnd}" radius="{radius}"
+							  rotation="180"/>
+	<popViewBody:PopViewBody id="popBody" width="{width}" height="0" backgroundColor="0xEEEEEE"
+							rotation="180" bodyHeight="240"/>
+	<mapPopView:PopViewButton id="popButton" width="{width}" height="50"
+							  rotation="180"/>
+	<mapPopView:PopViewTop id="popTop" width="{width}" height="50" colorBegin="{colorBegin}"
+						   colorEnd="{colorEnd}" radius="{radius}" rotation="180" text="{title}"/>
+</s:VGroup>

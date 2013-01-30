@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 initialize="init(event)">
+	<fx:Script>
+		<![CDATA[
+			import caurina.transitions.Tweener;
+			
+			import flash.filters.DropShadowFilter;
+			
+			import mx.events.FlexEvent;
+			
+			public var defaultLogo:String = "main/assist/imgs/pop_button_logo.png";
+			[Bindable] public var logoSource:String = defaultLogo;
+			
+			private var angleHeight:Number = 6;
+			private var arrowWidth:Number = 16;
+			private var arrowHeight:Number = 12;
+			private var matrix:Matrix;
+			
+			protected function init(event:FlexEvent):void
+			{
+				matrix = new Matrix();
+				matrix.createGradientBox(width,height,- Math.PI * 0.5);
+				with(backGround.graphics)
+				{
+//					beginGradientFill(GradientType.LINEAR,[0x304050,0x507080],[1,1],[0,255],matrix);	//蓝色
+					beginGradientFill(GradientType.LINEAR,[0x993300,0xFF6314],[1,1],[0,255],matrix);	//黄色
+					drawRect(0,0,width,height);
+					endFill();
+				}
+				
+				with(arrow.graphics)
+				{
+					beginFill(0xFFFFFF);
+					lineTo(0,arrowHeight - angleHeight);
+					lineTo(arrowWidth - angleHeight,arrowHeight - angleHeight);
+					lineTo(arrowWidth - angleHeight,arrowHeight);
+					lineTo(arrowWidth + angleHeight,0);
+					lineTo(arrowWidth - angleHeight,- arrowHeight);
+					lineTo(arrowWidth - angleHeight,- arrowHeight + angleHeight);
+					lineTo(0,- arrowHeight + angleHeight);
+					lineTo(0,0);
+				}
+				
+				arrow.filters = label.filters = [new DropShadowFilter(1,90,0,0.6,2,2)];
+				backGround.filters = [new DropShadowFilter(2,90,0,0.6,2,6,1,1,true)];
+			}
+			
+			public function doAnimate():void
+			{
+				Tweener.removeTweens(mainMask);
+				mainMask.width = 0;
+				Tweener.addTween(mainMask,{width:label.width + 40,time:1.2});
+				
+				Tweener.removeTweens(arrow);
+				arrow.left = 4;
+				Tweener.addTween(arrow,{left:label.width + 20,time:1,transition:"easeOutBack"});
+			}
+			
+			public function clearAnimate():void
+			{
+				Tweener.removeTweens(mainMask);
+				mainMask.width = 0;
+				
+				Tweener.removeTweens(arrow);
+				arrow.left = 4;
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<mx:UIComponent id="backGround"/>
+	<s:SkinnableContainer id="mainMask" height="{height}" backgroundAlpha="0" backgroundColor="0"/>
+	<s:Label id="label" left="10" color="0xEEEEEE" fontSize="24" mask="{mainMask}" text="如何到达"
+			 verticalCenter="0"/>
+	<s:Image right="7" maxHeight="40" horizontalAlign="right" scaleMode="letterbox"
+			 source="{logoSource}" verticalCenter="1"/>
+	<mx:UIComponent id="arrow" left="4" verticalCenter="0"/>
+</s:Group>

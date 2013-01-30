@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:shapes="gim.shapes.*"
+		 width="310" height="43" click="onClick(event)" creationComplete="onCreated(event)"
+		 mouseDown="onMouseDown(event)" mouseUp="onMouseUp(event)">
+	<fx:Script>
+		<![CDATA[
+			import gim.events.GimEvent;
+			import gim.patterns.interfaces.Observer;
+			
+			import mx.events.FlexEvent;
+			static public var SELECTED:String = "selected";
+			static public var UNSELECTED:String = "unselected";
+			
+			public var isNewsTypeButton:Boolean = false;
+//			public var dataList:Array;
+			[Bindable] public var bgUnSelected:String;
+			[Bindable] public var bgSelected:String;
+			
+			[Bindable] public var logoUnSelected:String;
+			[Bindable] public var logoSelected:String;
+			
+			[Bindable] public var rectColor:uint;
+			[Bindable] public var labelText:String = "按钮标签";
+			
+			public var isArrowShow:Boolean = true;
+			private var isLogoShow:Boolean = true;
+			private var isColorShow:Boolean = true;
+			private var _selected:Boolean = false;
+			private var _index:int;
+			private var origMouseX:Number;
+			private var origMouseY:Number;
+
+			protected function onCreated(event:FlexEvent):void
+			{
+				if(!logoUnSelected || !logoSelected)
+				{
+					isLogoShow = false;
+					label.horizontalCenter = -40;
+				}
+				if(!isArrowShow) 
+				{
+					label.horizontalCenter = 0;
+					arrowSelectedImg.visible = arrowUnselectedImg.visible = false;
+				}
+				if(!rectColor)
+				{
+					isColorShow = false;
+					colorRect.visible = false;
+				}
+			}
+
+			public function get index():int
+			{
+				return _index;
+			}
+
+			public function set index(value:int):void
+			{
+				_index = value;
+			}
+
+			
+			public function get selected():Boolean
+			{
+				return _selected;
+			}
+			
+			public function set selected(value:Boolean):void
+			{
+				_selected = value;
+				if(_selected)
+				{
+					label.setStyle("color",0xffffff);
+					bgSelectedImg.visible = true;
+					bgUnselectedImg.visible = false;
+					if(isArrowShow)
+					{
+						arrowSelectedImg.visible = true;
+						arrowUnselectedImg.visible = false;
+					}
+					if(isLogoShow)
+					{
+						logoSelectedImg.visible = true;
+						logoUnselectedImg.visible = false;
+					}
+				}
+				else
+				{
+					label.setStyle("color",0x202020);
+					bgSelectedImg.visible = false;
+					bgUnselectedImg.visible = true;
+					if(isArrowShow)
+					{
+						arrowSelectedImg.visible = false;
+						arrowUnselectedImg.visible = true;
+					}
+					if(isLogoShow)
+					{
+						logoSelectedImg.visible = false;
+						logoUnselectedImg.visible = true;
+					}
+				}
+			}
+			
+			protected function onMouseDown(event:MouseEvent):void
+			{
+				origMouseX = this.mouseX;
+				origMouseY = this.mouseY;
+			}
+			
+			private var mouseMoveMax:Number = 10;
+			protected function onMouseUp(event:MouseEvent):void
+			{
+				if(Math.abs(this.mouseX - origMouseX) < mouseMoveMax && Math.abs(this.mouseY - origMouseY) < mouseMoveMax)
+				{
+					this.dispatchEvent(new GimEvent(GimEvent.BUTTON_CLICKED,this));
+				}
+			}
+			
+			protected function onClick(event:MouseEvent):void
+			{
+				event.stopPropagation();
+				this.dispatchEvent(new GimEvent("BASEBUTTON_CLICK",this));
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Image id="bgSelectedImg" visible="false" x="0" y="0" source="{bgSelected}"/>
+	<s:Image id="bgUnselectedImg" visible="true" x="0" y="0" source="{bgUnSelected}"/>
+	<s:Label id="label" color="#202020" fontSize="18" fontWeight="bold" horizontalCenter="0"
+			 text="{labelText}" verticalCenter="0"/>
+	<s:Image id="arrowSelectedImg" visible="false" right="20" source="main/assist/imgs/按钮上的箭头(白).png"
+			 verticalCenter="0"/>
+	<s:Image id="arrowUnselectedImg" visible="true" right="20" source="main/assist/imgs/按钮上的箭头.png"
+			 verticalCenter="0"/>
+	<s:Image id="logoSelectedImg" visible="false" left="40" source="{logoSelected}"
+			 verticalCenter="0"/>
+	<s:Image id="logoUnselectedImg" visible="true" left="40" source="{logoUnSelected}"
+			 verticalCenter="0"/>
+	<s:Graphic id="colorRect" width="6" height="30" verticalCenter="0">
+		<s:Rect width="6" height="30" bottomRightRadiusX="2" topRightRadiusX="2">
+			<s:fill>
+				<s:SolidColor color="{rectColor}"/>
+			</s:fill>
+		</s:Rect>
+	</s:Graphic>
+</s:Group>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<components:RightViewContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
+							   xmlns:s="library://ns.adobe.com/flex/spark"
+							   xmlns:mx="library://ns.adobe.com/flex/mx"
+							   xmlns:components="main.components.*" creationComplete="onCreate(event)">
+	<fx:Script>
+		<![CDATA[
+			import core.structs.News;
+			import core.structs.NewsType;
+			
+			import gim.components.GimAlbum;
+			import gim.components.GimBrowser;
+			
+			import main.components.newsList.NewsList;
+			
+			import mx.collections.ArrayList;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			
+			private var newsType:NewsType;
+			private var newsList:NewsList;
+			private var album:GimAlbum;
+			private var browser:GimBrowser;
+			
+			public function show($newsType:NewsType):void
+			{
+				newsType = $newsType;
+				//testText = newsType.name[AppConfig.instance.currentLanguageID];
+				
+				var newsImageURLs:Array = [];
+				for each(var news:News in newsType.subNews)
+				{
+					if(news.image && news.image != "")
+						newsImageURLs.push(AppConfig.instance.cache + news.image);
+				}
+				newsList.dataProvider = newsType.subNews;
+				album.playURLs(newsImageURLs);
+			}
+			
+			protected function onCreate(event:FlexEvent):void
+			{
+				//album
+				var albumContainer:UIComponent = new UIComponent();
+				this.addElement(albumContainer);
+				albumContainer.width = this.width * 0.6;
+				albumContainer.height = this.height * 0.8;
+				albumContainer.y = this.height * 0.1;
+				albumContainer.addChild(album = new GimAlbum(albumContainer.width,albumContainer.height,[],true,true,3000,true,0.8,3,false));
+				
+				//newsView
+				this.addElement(newsList = new NewsList());
+				newsList.width = this.width * 0.4;
+				newsList.height = this.height * 0.8;
+				newsList.x = this.height * 0.6 + newsList.width * 0.5;
+				newsList.y = this.height * 0.1;
+				
+				//browser
+				var browserContainer:UIComponent = new UIComponent();
+				this.addElement(browserContainer);
+				browserContainer.width = this.width;
+				browserContainer.height = this.height;
+				browserContainer.addChild(browser = new GimBrowser(browserContainer.width,browserContainer.height,false));
+				
+				browser.padding = 48;
+				newsList.browser = browser;
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+</components:RightViewContainer>

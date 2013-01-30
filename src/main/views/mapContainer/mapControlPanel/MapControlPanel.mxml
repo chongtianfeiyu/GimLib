@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:floorsPanel="main.views.mapContainer.floorsPanel.*"
+		 xmlns:floorButtons="main.views.mapContainer.floorsPanel.floorButtons.*"
+		 width="200" height="580" implements="gim.maps.GimMap3DControlPanelInterface" xmlns:floorButtons1="main.views.mapContainer.mapControlPanel.floorButtons.*">
+	<fx:Script>
+		<![CDATA[
+			import core.structs.Place;
+			import core.structs.Floor;
+			
+			import gim.events.GimEvent;
+			import gim.maps.GimMap3D;
+			import gim.maps.MapInterface;
+			
+			import main.views.mapContainer.mapControlPanel.floorButtons.FloorButton;
+			
+			import mx.events.FlexEvent;
+			
+			private var _data:Object;
+			public function get data():Object
+			{
+				return _data;
+			}
+
+			public function set data(value:Object):void
+			{
+				_data = value;
+				var i:int = 0;
+				for each(var floor:Floor in data)
+				{
+					var btn:FloorButton = new FloorButton();
+					btn.floor = floor;
+					btn.floorID = floor.id;
+					btn.nameCN = floor.name["1"];
+					btn.nameEN = floor.name["2"] == ""?(i == 0?"1B":i + "F"):floor.name["2"];
+					btn.index = i;
+					btn.addEventListener(MouseEvent.CLICK,onBtnClick);
+					i++;
+					buttonBar.floorBtns.addElementAt(btn,1);
+					//.addElement(btn);
+				}
+				
+				scaler.y = buttonBar.floorBtns.numElements * btn.height + 40;
+				this.height = scaler.height + scaler.y + 80;
+				
+				for each(var place:Place in AppConfig.instance.dataProvider.ObjPlaces)
+				{
+					if(place.nodeID == AppConfig.instance.initializeDeviceNodeID)
+					{
+						this.onMapFloorChange(place.floorID);
+						break;
+					}
+				}
+			}
+			
+			protected function onBtnClick(event:MouseEvent):void
+			{
+				var btn:FloorButton = event.currentTarget as FloorButton;
+				buttonBar.selectedByIndex(btn.index);
+				this.setMapFloorID(btn.floorID);
+				
+				this.dispatchEvent(new GimEvent("FLOOR_BUTTON_CLICKED",btn));
+			}
+			
+			private function onMapFloorChange(floorID:String):void
+			{
+				buttonBar.selectedByFloorID(floorID);
+			}
+			
+			/**
+			 * 缩放面板有变化时
+			 * */
+			protected function onScalerChange(event:Event):void
+			{
+				//scaler.value 取值范围 [0,100]
+				var value:Number = scaler.value;
+				value = (maxMapCameraDistance - minMapCameraDistance) * value / 100 + minMapCameraDistance;
+				this.setMapScale(value);
+			}
+			
+			//implement interface////////////////////////////////////////////////
+			public function setMap(mapInterface:MapInterface):void
+			{
+				this.map = GimMap3D(mapInterface);
+				map.regFuncFloorChange(onMapFloorChange);
+			}
+			private var map:GimMap3D;
+			
+			public function setMapScaleLimits(currentCameraDistance:Number,maxLimit:Number,minLimit:Number):void
+			{
+				this.maxMapCameraDistance = maxLimit;
+				this.minMapCameraDistance = minLimit;
+				this.scaler.value = (currentCameraDistance - minMapCameraDistance) / (maxMapCameraDistance - minMapCameraDistance) * 100;
+			}
+			public var maxMapCameraDistance:Number;
+			public var minMapCameraDistance:Number;
+			
+			public function setMapFloorID(floorID:String):void
+			{
+				this.map.floorID = floorID;
+			}
+			
+			public function setMapScale(value:Number):void
+			{
+				this.map.rootContainer3D.cameraDistance = value;
+			}
+			
+			public function setMapPlaceType(placeTypeID:String):void
+			{
+				this.map.placeTypeID = placeTypeID;
+			}
+			
+			public function setMapMoveMode(isMoveMod:Boolean):void
+			{
+				if(isMoveMod)
+					map.setMoveMode();
+				else
+					map.setRotateMode();
+			}
+			
+			public function resetMap():void
+			{
+				map.reset();
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<!-- background 背景 -->
+	<s:Rect width="100%" height="100%" bottomLeftRadiusX="12" topLeftRadiusX="12">
+		<s:fill>
+			<s:SolidColor alpha="0.6" color="0x333333"/>
+		</s:fill>
+	</s:Rect>
+	
+	<!-- floorButtons 楼层按钮面板 -->
+	<floorButtons1:FloorButtonBar id="buttonBar" top="20" width="160" horizontalCenter="0"/>
+	
+	<!-- mapScaler 缩放面板  -->
+	<s:VScrollBar id="scaler" y="80" height="170" change="onScalerChange(event)"
+				  horizontalCenter="0" maximum="100" skinClass="skins.MapScalerVScrollBarSkin"
+				  stepSize="10"/>
+	
+	<!-- 地图操作按钮 -->
+	<s:Button left="20" bottom="20" label="移动" click="{this.setMapMoveMode(true);}"
+			  icon="@Embed('main/components/icons/move.png')"
+			  skinClass="skins.MapScalerVScrollerBarButtonSkin"/>
+	<s:Button bottom="20" label="旋转" click="{this.setMapMoveMode(false);}" horizontalCenter="0"
+			  icon="@Embed('main/components/icons/rotate.png')"
+			  skinClass="skins.MapScalerVScrollerBarButtonSkin"/>
+	<s:Button right="20" bottom="20" label="重置" click="{this.resetMap();}"
+			  icon="@Embed('main/components/icons/reset.png')"
+			  skinClass="skins.MapScalerVScrollerBarButtonSkin"/>
+</s:Group>

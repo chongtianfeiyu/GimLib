@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:imagePlayer="main.views.imagePlayer.*"
+		 xmlns:layout="org.osmf.layout.*"
+		 xmlns:components="main.components.*">
+	<fx:Script>
+		<![CDATA[
+			import caurina.transitions.Tweener;
+			import main.components.HorizontalCenterRotateImage;
+			import mx.events.FlexEvent;
+			
+			import spark.filters.ColorMatrixFilter;
+			private var mediaUrls:Array;
+			private var curIndex:int;
+			
+			private var imageBaseGap:Number;
+			private var imageStepGap:Number;
+			private var angleBase:Number = 90;
+			private var angleStep:Number = 0;
+			private var colorMatrixFilter:spark.filters.ColorMatrixFilter = new spark.filters.ColorMatrixFilter([
+				1,0,0,0,N,
+				0,1,0,0,N,
+				0,0,1,0,N,
+				0,0,0,1,0
+			]);
+			private var N:int = -80; // N ∈ [-100,100]
+			
+			public function load($mediaUrls:Array):void
+			{
+				for each(var url:String in $mediaUrls)
+				{
+					if(url != "")
+					{
+						var img:HorizontalCenterRotateImage = new HorizontalCenterRotateImage();
+						img.source = AppConfig.instance.cache ? AppConfig.instance.cache + url : url;
+						img.verticalCenter = 0;
+						imageContainer.addElement(img);
+					}
+				}
+				
+				imageBaseGap = this.width * 0.4;
+				imageStepGap = this.width * 0.3 / imageContainer.numElements;
+				curIndex = 0;
+				slider.maximum = imageContainer.numElements - 1;
+				if(slider.maximum == 0)
+				{
+					slider.visible = false;
+					preButton.visible = false;
+					nextButton.visible = false;
+				}else
+				{
+					slider.visible = true;
+					preButton.visible = true;
+					nextButton.visible = true;
+				}
+				rankImages();
+			}
+			
+			protected function colseBtnClick(event:MouseEvent):void
+			{
+				while(imageContainer.numElements > 0)
+				{
+					var img:HorizontalCenterRotateImage = imageContainer.getElementAt(0) as HorizontalCenterRotateImage;
+					imageContainer.removeElement(img);
+					img.img.bitmapData.dispose();
+					img = null;
+				}
+				this.dispatchEvent(new Event("ON_IMAGEPLAYER_CLOSE",true));
+			}
+			
+			/**
+			 * rank images
+			 * */
+			private function rankImages():void
+			{
+				slider.value = curIndex;
+				
+				var length:int = imageContainer.numElements;
+				for(var i:int = 0;i < length;i ++)
+				{
+					var rankIndex:int = i - curIndex;
+					var img:HorizontalCenterRotateImage 	= imageContainer.getElementAt(i) as HorizontalCenterRotateImage;
+					
+					var imgHorizontalCenterValue:Number 	= (rankIndex == 0) ? 0 : (rankIndex * imageStepGap + (rankIndex > 0 ? imageBaseGap : -imageBaseGap));
+					var imgRotationYValue:Number 			= (rankIndex == 0) ? 0 : (rankIndex * angleStep + (rankIndex > 0 ? angleBase : -angleBase));
+					var imgAlphaValue:Number 				= (rankIndex == 0) ? 1 : 0.9;
+					var imgScale:Number 					= (rankIndex == 0) ? 1 : 0.6;
+					img.depth 								= (rankIndex == 0) ? 1000 : (rankIndex > 0 ? -rankIndex : rankIndex);
+					img.filters								= (rankIndex == 0) ? [dropShadowFilter] : [dropShadowFilter,colorMatrixFilter];
+					
+					Tweener.removeTweens(img);
+					Tweener.addTween(img,{scaleX:imgScale,scaleY:imgScale,horizontalCenter:imgHorizontalCenterValue,time:0.5,transition:"easeInOutSine"});
+				}
+				
+			}
+			
+			protected function onPreBtnClick(event:MouseEvent):void
+			{
+				if(curIndex > 0) curIndex --;
+				rankImages();
+			}
+			
+			protected function onNextBtnClick(event:MouseEvent):void
+			{
+				if(curIndex < imageContainer.numElements - 1) curIndex ++;
+				rankImages();
+			}
+			
+			protected function onSliderChange(event:Event):void
+			{
+				curIndex = slider.value;
+				rankImages();
+			}
+			
+			protected function onSliderMouseOver(event:MouseEvent):void
+			{
+				Tweener.removeTweens(slider);
+				Tweener.addTween(slider,{alpha:0.9,time:2});
+			}
+			
+			protected function onSliderMouseOut(event:MouseEvent):void
+			{
+				Tweener.removeTweens(slider);
+				Tweener.addTween(slider,{alpha:0.1,time:2});
+			}
+			
+			private var origX:Number;
+			private var aimX:Number;
+			protected function imageContainerMouseDownHandler(event:MouseEvent):void
+			{
+				origX = event.localX;
+				imageContainer.addEventListener(MouseEvent.MOUSE_MOVE,onImageContainerMouseMove);
+				imageContainer.addEventListener(MouseEvent.MOUSE_UP,onImageContainerMouseUp);
+			}
+			
+			protected function onImageContainerMouseMove(event:MouseEvent):void
+			{
+				aimX = event.localX - origX;
+				if(Math.abs(aimX) > 50)
+				{
+					if(aimX > 0)
+					{
+						curIndex --;
+					}else
+					{
+						curIndex ++;
+					}
+					if(curIndex < 0) curIndex = 0;
+					else if(curIndex > imageContainer.numElements - 1) curIndex = imageContainer.numElements - 1;
+					rankImages();
+					imageContainer.removeEventListener(MouseEvent.MOUSE_MOVE,onImageContainerMouseMove);
+				}
+			}
+			
+			protected function onImageContainerMouseUp(event:MouseEvent):void
+			{
+				if(imageContainer.hasEventListener(MouseEvent.MOUSE_MOVE))
+					imageContainer.removeEventListener(MouseEvent.MOUSE_MOVE,onImageContainerMouseMove);
+				imageContainer.removeEventListener(MouseEvent.MOUSE_UP,onImageContainerMouseUp);
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<!--filters-->
+		<s:DropShadowFilter id="dropShadowFilter" angle="90" distance="4"/>
+	</fx:Declarations>
+	<!-- mask -->
+	<s:Group id="imgMask" width="100%" height="100%">
+		<s:Rect width="100%" height="100%">
+			<s:fill>
+				<s:SolidColor alpha="0.6" color="0"/>
+			</s:fill>
+		</s:Rect>
+	</s:Group>
+	
+	<!-- background -->
+	<s:Rect width="100%" height="100%" radiusX="12">
+		<s:fill>
+			<s:SolidColor alpha="0.6" color="0"/>
+		</s:fill>
+	</s:Rect>
+	
+	<!--ImageContainer-->
+	<s:Group id="imageContainer" width="0" height="0" horizontalCenter="0" mask="{imgMask}"
+			 verticalCenter="0" mouseDown="imageContainerMouseDownHandler(event)">
+		<!--ImageRear
+		<components:HorizontalCenterRotateImage verticalCenter="0" horizontalCenter="0" filters="{[imageFilters]}" source="cache/resources/imgs/192513MF-7.jpg" />
+		-->
+	</s:Group>
+	
+	<!-- slider -->
+	<s:HSlider alpha="0.1" mouseOver="onSliderMouseOver(event)" mouseOut="onSliderMouseOut(event)" id="slider" width="30%" horizontalCenter="0" bottom="10" stepSize="1" change="onSliderChange(event)" showDataTip="false"/>
+	
+	<!-- pre button -->
+	<s:Button id="preButton" left="30" click="onPreBtnClick(event)" skinClass="skins.FlipButton"
+			  verticalCenter="0"/>
+	
+	<!-- next button -->
+	<s:Button id="nextButton" right="30" click="onNextBtnClick(event)" rotation="180"
+			  skinClass="skins.FlipButton" verticalCenter="0"/>
+	
+	<!--close button-->
+	<s:Button right="-20" top="-20" click="colseBtnClick(event)"
+			  skinClass="skins.MediaPlayerCloseButtonSkin"/>
+</s:Group>

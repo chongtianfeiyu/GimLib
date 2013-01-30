@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<independent:MenuSubject xmlns:fx="http://ns.adobe.com/mxml/2009"
+					  xmlns:s="library://ns.adobe.com/flex/spark"
+					  xmlns:mx="library://ns.adobe.com/flex/mx"
+					  xmlns:components="main.components.*"
+					  xmlns:patterns="main.components.patterns.*"
+					  width="100%" gap="0" xmlns:independent="main.components.independent.*">
+	<fx:Script>
+		<![CDATA[
+			import core.structs.Language;
+			import core.structs.Part;
+			import gim.events.GimEvent;
+			
+			import main.components.BaseButton;
+			import main.components.MainMenuItem;
+			
+			import mx.events.FlexEvent;
+			
+			[Bindable] private  var itemHeight:Number = 96;
+			
+			override protected function onCreated(event:FlexEvent):void
+			{
+				setIndex();
+			}
+			
+			private var _data:Object;
+			
+			public function get data():Object
+			{
+				return _data;
+			}
+			
+			public function set data(value:Object):void
+			{
+				_data = value;
+				var i:int = 0;
+				for each(var part:Part in data)
+				{
+					var btn:MainMenuItem = new MainMenuItem();
+//					BindingUtils.bindProperty(btn,"height",itemHeight,"valueOf");
+					btn.height = itemHeight;
+					btn.item = part;
+					btn.labelText = part.name[AppConfig.instance.currentLanguageID];
+					btn.logoSelected = AppConfig.instance.cache + part.logo;
+					btn.logoUnSelected = AppConfig.instance.cache + part.logo;
+					btn.title = part.name[AppConfig.instance.currentLanguageID];
+					btn.index = i;
+					i++;
+					this.addElement(btn);
+				}
+//				itemHeight = this.height / (i + 1);
+			}
+			
+			public function set languageData(value:Object):void
+			{
+				var btn:MainMenuItem = new MainMenuItem();
+				btn.height = itemHeight;
+				btn.item = value;
+				btn.labelText = value[AppConfig.instance.currentLanguageID].name;
+				btn.logoSelected = "main/assist/imgs/简体中文.png";
+				btn.logoUnSelected = "main/assist/imgs/简体中文.png";
+				btn.title = "语言转换";
+//				btn.title = value[AppConfig.instance.currentLanguageID].name;
+				btn.index = this.numElements;
+				this.addElement(btn);
+				
+				var i:int = 0;
+				for each(var language:Language in value)
+				{
+					trace(language);
+				}
+				//				itemHeight = this.height / (i + 1);
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<!--
+		<components:MainMenuItem height="{itemHeight}" labelText="活动速递"
+								 logoSelected="main/assist/imgs/活动速递2.png"
+								 logoUnSelected="main/assist/imgs/活动速递.png" title="活动速递"/>
+		<components:MainMenuItem height="{itemHeight}" labelText="商城服务"
+								 logoSelected="main/assist/imgs/商城服务2.png"
+								 logoUnSelected="main/assist/imgs/商城服务.png" title="商城服务"/>
+		<components:MainMenuItem height="{itemHeight}" labelText="交通地理"
+								 logoSelected="main/assist/imgs/交通地图2.png"
+								 logoUnSelected="main/assist/imgs/交通地图.png" title="地理位置"/>
+		<components:MainMenuItem height="{itemHeight}" labelText="商城概况"
+								 logoSelected="main/assist/imgs/商城概况2.png"
+								 logoUnSelected="main/assist/imgs/商城概况.png" title="公司简介"/>
+		<components:MainMenuItem height="{itemHeight}" labelText="简体中文"
+								 logoSelected="main/assist/imgs/简体中文.png"
+								 logoUnSelected="main/assist/imgs/简体中文.png" title="语言转换"/>
+	-->
+</independent:MenuSubject>

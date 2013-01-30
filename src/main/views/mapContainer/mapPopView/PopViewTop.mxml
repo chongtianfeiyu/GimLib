@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 initialize="init(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import spark.filters.DropShadowFilter;
+			
+			[Bindable] public var text:String;
+			
+			public var radius:Number;
+			public var colorBegin:uint;
+			public var colorEnd:uint;
+			
+			private var alphas:Array;
+			private var ratios:Array;
+			private var matrix:Matrix;
+			
+			protected function init(event:FlexEvent):void
+			{
+				alphas = [1,1];
+				ratios = [0,255];
+				matrix = new Matrix();
+				drawBackground();
+				drawCloseButton();
+			}
+			
+			private function drawBackground():void
+			{
+				with(this.graphics)
+				{
+					clear();
+					matrix.createGradientBox(width,height,Math.PI * 0.5);
+					beginGradientFill(GradientType.LINEAR,[colorBegin,colorEnd],alphas,ratios,matrix);
+					
+					moveTo(radius,0);
+					lineTo(width,0);
+					lineTo(width - radius,0);
+					curveTo(width,0,width,radius);
+					lineTo(width,height);
+					lineTo(0,height);
+					lineTo(0,radius);
+					curveTo(0,0,radius,0);
+					
+					endFill();
+				}
+			}
+			
+			private var buttonSize:Number = 16;
+			private var closeScale:Number = 0.3;
+			private function drawCloseButton():void
+			{
+				matrix.createGradientBox(buttonSize,buttonSize,Math.PI * 0.5,- buttonSize * 0.5,- buttonSize * 0.5);
+				with(closeButton.graphics)
+				{
+					clear();
+					moveTo(0,0);
+					beginFill(0x333333,0.2);
+					drawCircle(0,0,buttonSize);
+					beginFill(0xEEEEEE,1);
+					drawCircle(0,0,buttonSize - 2);
+					lineStyle(3,0,0.6);
+					endFill();
+					moveTo(- buttonSize * closeScale,- buttonSize * closeScale);
+					lineTo(buttonSize * closeScale,buttonSize * closeScale);
+					moveTo(buttonSize * closeScale,- buttonSize * closeScale);
+					lineTo(- buttonSize * closeScale,buttonSize * closeScale);
+				}
+				closeButton.filters = [new spark.filters.DropShadowFilter(1,90,0,0.6,2,2)];
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<s:Label fontSize="20" color="0x333333" left="10" text="{text}" verticalCenter="0"/>
+	<mx:UIComponent id="closeButton" right="24" verticalCenter="0"/>
+</s:Group>

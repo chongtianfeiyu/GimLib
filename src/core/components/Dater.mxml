@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="757" height="56" initialize="init(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			[Bindable] private var timeStr:String = "00 00";
+			[Bindable] private var dateStr:String = "2013年12月31日 星期三";
+			[Bindable] private var weather:String = "多云 23℃ - 27℃";
+			[Bindable] private var color:uint = 0xEEEEEE;
+			
+			private var timer:Timer;
+			private var date:Date;
+			
+			protected function init(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				date = new Date();
+				timer = new Timer(1000);
+				timer.addEventListener(TimerEvent.TIMER,onTimer);
+				timer.start();
+			}
+			
+			protected function onTimer(event:TimerEvent):void
+			{
+				colon.visible = !colon.visible;
+				date = null;
+				date = new Date();
+				
+				var hours:Number = date.hours;
+				var minutes:Number = date.minutes;
+				timeStr = "";
+				timeStr = hours < 10 ? "0" + hours.toString() : hours.toString();
+				timeStr = minutes < 10 ? timeStr + " 0" + minutes.toString() : timeStr = timeStr + " " + minutes.toString();
+				
+				dateStr = "";
+				var year:Number = date.fullYear;
+				var month:Number = date.month + 1;
+				var day:Number = date.date;
+				var week:Number = date.day;
+				dateStr = year + "年" + month + "月" + day + "日 星期";
+				switch(week)
+				{
+					case 0: dateStr += "日";break;
+					case 1: dateStr += "一";break;
+					case 2: dateStr += "二";break;
+					case 3: dateStr += "三";break;
+					case 4: dateStr += "四";break;
+					case 5: dateStr += "五";break;
+					case 6: dateStr += "六";break;
+					default:break;
+				}
+					
+				timer.reset();
+				timer.start();
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Group left="12" bottom="2" width="107" height="48">
+		<s:Label horizontalCenter="0" verticalCenter="0" color="{color}" fontSize="48" text="{timeStr}" textAlign="center"
+				 verticalAlign="middle"/>
+		<s:Label id="colon" color="{color}" fontSize="48" horizontalCenter="0" text=":"
+				 textAlign="center" verticalAlign="middle" verticalCenter="0"/>
+	</s:Group>
+	
+	<s:Label color="{color}" right="220" bottom="4" fontSize="24" text="{dateStr}"/>
+	<s:Label right="12" bottom="4" color="{color}" fontSize="24" text="{weather}"/>
+	
+	<!--
+	<s:Label left="2" top="2" fontSize="64" text="{date.seconds.toString()}"/>
+	<s:Label x="139" y="36" text=""/>
+	<s:Label x="210" y="35" text="week"/>
+	<s:Label x="296" y="34" text="weather"/>
+	-->
+</s:Group>

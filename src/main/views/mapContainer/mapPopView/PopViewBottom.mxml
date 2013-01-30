@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" initialize="init(event)" xmlns:mapPopView="main.components.mapContainer.mapPopView.*" xmlns:bottomButtonBar="main.components.mapContainer.mapPopView.bottomButtonBar.*">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			public var radius:Number;
+			public var center:Number;
+			public var angelSize:Number;
+			public var colorBegin:uint;
+			public var colorEnd:uint;
+			
+			private var alphas:Array;
+			private var ratios:Array;
+			private var matrix:Matrix;
+			
+			protected function init(event:FlexEvent):void
+			{
+				alphas = [1,1];
+				ratios = [0,255];
+				matrix = new Matrix();
+//				btnBar.verticalCenter = -angelSize * 0.5;
+				draw();
+			}
+			
+			private function draw():void
+			{
+				with(this.graphics)
+				{
+					clear();
+					matrix.createGradientBox(width,height - angelSize,Math.PI * 0.5);
+					beginGradientFill(GradientType.LINEAR,[colorBegin,colorEnd],alphas,ratios,matrix);
+					
+					moveTo(0,0);
+					lineTo(width,0);
+					lineTo(width,height - angelSize - radius);
+					curveTo(width,height - angelSize,width - radius,height - angelSize);
+					lineTo(center + angelSize,height - angelSize);
+					lineTo(center,height);
+					lineTo(center - angelSize,height - angelSize);
+					lineTo(radius,height - angelSize);
+					curveTo(0,height - angelSize,0,height - angelSize - radius);
+					lineTo(0,0);
+					
+					endFill();
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+</s:Group>

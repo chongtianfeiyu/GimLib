@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
+					  xmlns:s="library://ns.adobe.com/flex/spark"
+					  xmlns:mx="library://ns.adobe.com/flex/mx"
+					  click="onClick(event)" color="{selectedColor}">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			import mx.events.ResizeEvent;
+			[Bindable] public var label:String = "";
+			private var _isSelected:Boolean;
+
+			public function get isSelected():Boolean
+			{
+				return _isSelected;
+			}
+
+			public function set isSelected(value:Boolean):void
+			{
+				_isSelected = value;
+				if(isSelected)
+				{
+					this.setStyle("backgroundColor",selectedColor.toString());
+					if(mainLabel) mainLabel.setStyle("color",unselectedColor.toString());
+				}
+				else {
+					this.setStyle("backgroundColor",unselectedColor.toString());
+					if(mainLabel) mainLabel.setStyle("color",selectedColor.toString());
+				}
+			}
+			
+			protected function onClick(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+//				this.isSelected = true;
+				this.dispatchEvent(new Event("BTN_CLICKED",true));
+			}
+			
+			protected function onCreated(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				this.isSelected = true;
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<fx:uint id="selectedColor"></fx:uint>
+		<fx:uint id="unselectedColor">0xffffff</fx:uint>
+	</fx:Declarations>
+	<s:Label id="mainLabel" color="{unselectedColor}" horizontalCenter="0" text="{label}"
+			 verticalCenter="0"/>
+</s:SkinnableContainer>

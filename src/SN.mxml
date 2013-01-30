@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
+					   xmlns:s="library://ns.adobe.com/flex/spark"
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   xmlns:cp="core.components.*"
+					   xmlns:independent="main.components.independent.*"
+					   backgroundAlpha="0" backgroundColor="0x222222" fontFamily="微软雅黑"
+					   initialize="init(event)" showStatusBar="false" addedToStage="onAddStage(event)">
+	<fx:Script>
+		<![CDATA[
+			import core.DataProvider;
+			import core.DataUpdater;
+			import core.WebServiceCommand;
+			
+			import main.AppContainer;
+			
+			import mx.events.FlexEvent;
+			
+			private var configURL:String = "config.xml";
+			
+			protected function init(event:FlexEvent):void
+			{
+				this.width = Capabilities.screenResolutionX;
+				this.height = Capabilities.screenResolutionY;
+//				this.width = 1920;
+//				this.height = 1080;
+//				this.x = -600;
+//				this.y = -400;
+//				this.width = 860;
+//				this.height = 484;
+				
+				AppConfig.instance.preLoader = preLoader;
+				AppConfig.instance.loadConfig(configURL,onConfigComplete);
+			}
+			
+			private function onConfigComplete():void
+			{
+				//更新或者不更新
+				if(AppConfig.instance.update == "1")
+				{
+					var dataUpdater:DataUpdater = new DataUpdater();
+					dataUpdater.update(initDataProvider);
+				}
+				else
+				{
+					initDataProvider();
+				}
+			}
+			
+			private function initDataProvider():void
+			{
+				AppConfig.instance.dataProvider = new DataProvider();
+				AppConfig.instance.dataProvider.init(initApp);
+			}
+			
+			private function initApp():void
+			{
+				var appContainer:AppContainer = new AppContainer();
+				this.addElementAt(appContainer,0);
+				
+				preLoader.visible = false;
+			}
+			
+			protected function onAddStage(event:Event):void
+			{
+				this.stage.addEventListener(KeyboardEvent.KEY_DOWN,onKeyDown);
+			}
+			
+			/**
+			 * set debugger
+			 * */
+			protected function onKeyDown(event:KeyboardEvent):void
+			{
+				if(event.ctrlKey)
+				{
+					switch(event.keyCode)
+					{
+						case 68:
+							debugger.visible = !debugger.visible;
+							break;
+					}
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<cp:PreLoader id="preLoader" horizontalCenter="0" verticalCenter="0"/>
+	<cp:Debugger app="{this}" id="debugger" visible="false"/>
+</s:WindowedApplication>

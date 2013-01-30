@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="100%" height="100%" xmlns:views="main.views.*" 
+		 initialize="init(event)" 
+		 xmlns:mapPopView="main.views.mapContainer.mapPopView.*" 
+		 xmlns:mapContainer="main.views.mapContainer.*" 
+		 xmlns:mapControlPanel="main.views.mapContainer.mapControlPanel.*">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<!--
+	<s:Image source="main/assist/imgs/底.png"/>
+	<s:Label color="#F7004C" fontSize="60" fontWeight="bold" text="MapContainer View"/>
+	<s:SWFLoader id="swf" init="swf_initHandler(event)" source="EMap.swf"/>
+	-->
+	<mx:UIComponent id="container" width="1200" height="600"/>
+	<fx:Script>
+		<![CDATA[
+			import core.DataProvider;
+			import core.structs.Floor;
+			import core.structs.Place;
+			
+			import gim.events.GimEvent;
+			import gim.maps.GimMap3D;
+			import gim.maps.Map;
+			import gim.maps.controlPanel.GimMapControlPanel;
+			
+			import main.views.mapContainer.mapControlPanel.floorButtons.FloorButton;
+			
+			import mx.events.FlexEvent;
+			
+			import spark.events.IndexChangeEvent;
+			
+			public function set shopPlace(value:String):void
+			{
+				if (content) {
+					try {
+						content.shopPlace = value;
+					} catch (e:Error) {trace(e.getStackTrace());}
+				}
+			}
+			
+			protected function setLanguage(id:String):void
+			{
+				if (content) {
+					try {
+						content.language = id;
+					} catch (e:Error) {trace(e.getStackTrace());}
+				}
+			}
+			
+			protected function setHall(id:String):void
+			{
+				if (content) {
+					try {
+						content.hallID = id;
+					} catch (e:Error) {trace(e.getStackTrace());}
+				}
+			}
+			
+			protected function setFloor(floorID:String):void
+			{
+				if (map) {
+					try {
+						map.floorID = floorID;
+					} catch (e:Error) {trace(e.getStackTrace());}
+				}
+			}
+			
+			protected function setPlaceType(id:String):void
+			{
+				if (content) {
+					try {
+						content.placeType = id;
+					} catch (e:Error) {trace(e.getStackTrace());}
+				}
+			}
+			
+			protected function setMoveStyle(value:String):void
+			{
+				if (content) {
+					try {
+						content.moveStyle = value;	//move,rotate
+					} catch (e:Error) {trace(e.getStackTrace());}
+				}
+			}
+			
+			protected function setPosition(x:Number,y:Number):void
+			{
+				if (content) {
+					try {
+						content.moveMap(x,y);
+					} catch (e:Error) {trace(e.getStackTrace());}
+				}
+			}
+			
+			protected function zoomIn_clickHandler(event:MouseEvent):void
+			{
+				if (content) {
+					try {
+						content.cameraDistance-=100;
+					} catch (e:Error) {trace(e.getStackTrace());}
+				}
+			}
+			
+			protected function zoomOut_clickHandler(event:MouseEvent):void
+			{
+				if (content) {
+					try {
+						content.cameraDistance+=100;
+					} catch (e:Error) {trace(e.getStackTrace());}
+				}
+			}
+			
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			private var content:Object;
+			
+			public function get dataProvider():DataProvider
+			{
+				return _dataProvider;
+			}
+			
+			public function set dataProvider(value:DataProvider):void
+			{
+				_dataProvider = value;
+				configMap();			
+			}
+			private var _dataProvider:DataProvider;
+			
+			/**
+			 * 配置地图数据
+			 * */
+			private function configMap():void
+			{
+				var config:AppConfig = AppConfig.instance;
+				map = new GimMap3D();
+				container.addChild(map);
+				
+				GimMap3D(map).defaultRotationX 		= config.defaultRotationX;
+				GimMap3D(map).defaultRotationZ 		= config.defaultRotationZ;
+				GimMap3D(map).defaultCameraDistance = config.cameraDistance;
+				GimMap3D(map).maxCameraDistance		= config.maxCameraDistance;
+				GimMap3D(map).minCameraDistance		= config.minCameraDistance;
+				GimMap3D(map).minRotationX 			= config.minRotationX;
+				GimMap3D(map).maxRotationX 			= config.maxRotationX;
+				GimMap3D(map).placeBaseHeight 		= config.placeBaseHeight;
+				GimMap3D(map).placeFocusColor		= config.placeFocusColor;
+				
+				map.server			= config.cache;	//这里将网络地址转换为本地缓存地址
+				map.xmlFloorList 	= config.dataProvider.XMLs[AppConfig.WEB_SERVICE_COMMAND_FLOORLIST];
+				map.xmlPlaceType 	= config.dataProvider.XMLs[AppConfig.WEB_SERVICE_COMMAND_PLACETYPE];
+				map.xmlShopList 	= config.dataProvider.XMLs[AppConfig.WEB_SERVICE_COMMAND_SHOPLIST];
+				map.xmlPlaceList 	= config.dataProvider.XMLs[AppConfig.WEB_SERVICE_COMMAND_PLACELIST];
+				map.xmlPathList 	= config.dataProvider.XMLs[AppConfig.WEB_SERVICE_COMMAND_PATHLIST];
+				map.xmlPointList 	= config.dataProvider.XMLs[AppConfig.WEB_SERVICE_COMMAND_POINTLIST];
+				
+				map.setMapSize(1920 - 330, 1080);
+				map.backgroundUrl 			= config.backgroundUrl;
+				map.currentDiviceNodeID 	= config.initializeDeviceNodeID;
+				
+				map.regFuncPlaceClick(onPlaceClicked);
+//				map.regFuncFloorChange(floorChangeHandler);
+				//map.addEventListener("movePositionComplete", function(e:*):void{
+				//map.addEventListener("mapScale", function(e:*):void{
+				
+				map.init(onMapCreateComplete);
+				
+				mapControlPanel.setMap(map);
+				mapControlPanel.setMapScaleLimits(config.cameraDistance,config.maxCameraDistance,config.minCameraDistance);
+//				var gimMapControlPanel:GimMapControlPanel = new GimMapControlPanel(GimMap3D(map));
+//				container.addChild(gimMapControlPanel);
+			}
+			private var map:Map;
+			
+			protected function init(event:FlexEvent):void
+			{
+				mapPopView.popView.popButton.addEventListener(MouseEvent.CLICK,onPopButtonClick);
+				mapControlPanel.addEventListener("FLOOR_BUTTON_CLICKED",onFloorBtnClick);
+			}
+			
+			protected function floorChangeHandler(floorID:String):void
+			{
+				mapControlPanel.buttonBar.selectedByIndex(1);
+			}
+			
+			protected function onPlaceClicked(placeID:String):void
+			{
+				currentSelectedPlace = dataProvider.ObjPlaces[placeID];
+				mapPopView.show(currentSelectedPlace);
+			}
+			private var currentSelectedPlace:Place;
+			
+			/**
+			 * 地图弹出框的"去往"按钮点击监听
+			 * */
+			protected function onPopButtonClick(event:MouseEvent):void
+			{
+				trace("onPopButtonClick!");
+				mapPopView.hide();
+				if(currentSelectedPlace && map)
+				{
+					map.findPath(AppConfig.instance.initializeDeviceNodeID, currentSelectedPlace.nodeID);
+				}
+			}
+			
+			private function onMapCreateComplete():void
+			{
+				trace("- MapContainer,371,Map OK");
+			}
+			
+			private function onFloorBtnClick(e:GimEvent):void
+			{
+				// TODO Auto Generated method stub
+				var btn:FloorButton = e.data as FloorButton;
+//				setFloor(btn.index);
+			}
+			
+			/**
+			 * 传入一个Place对象,然后展示出来
+			 * @param place 传入要显示的Place对象
+			 * */
+			public function selectPlaceAndShowInfo(place:Place):void
+			{
+				mapPopView.show(place);
+				currentSelectedPlace = place;
+				if(map) map.currentSelectedNodeID = place.nodeID;
+				setFloor(place.floorID);
+			}
+			
+		]]>
+	</fx:Script>
+	<!-- 弹出菜单,显示选中的palce信息 -->
+	<mapPopView:MapPopView id="mapPopView" x="{this.width * 0.5}" y="{this.height * 0.5}"/>
+	
+	<!-- 底部广告条 -->
+	<mapContainer:BottomAdsPlayer id="adLogoPlayer" bottom="10" horizontalCenter="0"/>
+	
+	<!-- 地图操作面板 -->
+	<mapControlPanel:MapControlPanel id="mapControlPanel" right="0" verticalCenter="0"/>
+</s:Group>

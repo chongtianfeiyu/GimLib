@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:components="main.components.*"
+		 xmlns:patterns="main.components.patterns.*"
+		 xmlns:independent="main.components.independent.*"
+		 width="330" height="370" creationComplete="onCreated(event)" initialize="init(event)">
+	<fx:Script>
+		<![CDATA[
+			import core.structs.Category;
+			import caurina.transitions.Tweener;
+			
+			import gim.events.GimEvent;
+			
+			import main.components.BaseButton;
+			import main.components.SlideButton;
+			
+			import mx.events.FlexEvent;
+			
+			private var _data:Object;
+
+			public function get data():Object
+			{
+				return _data;
+			}
+
+			public function set data(value:Object):void
+			{
+				_data = value;
+				var i:int = 0;
+				for each(var item:Category in data)
+				{
+					var btn:SlideButton = new SlideButton();
+					btn.item = item;
+					btn.labelText = item.name["1"];
+					btn.rectColor = item.color == ""?Math.random() * 0xffffff:uint(item.color);
+					btn.index = i;
+					i++;
+					buttonList.addElement(btn);
+				}
+			}
+
+			
+			protected function init(event:FlexEvent):void
+			{
+			}
+			
+			protected function onCreated(event:FlexEvent):void
+			{
+				buttonList.addEventListener(MouseEvent.MOUSE_DOWN,onMouseDown);
+			}
+			
+			private var origMenuY:Number;
+			private var origMouseY:Number;
+			private var distanceMouseMove:Number;
+			private var aimMenuY:Number = 0;
+			protected function onMouseDown(event:MouseEvent):void
+			{
+				buttonList.unSelectAll();
+				origMenuY = buttonList.y;
+				origMouseY = this.mouseY;
+				this.addEventListener(MouseEvent.MOUSE_MOVE,onMouseMove);
+				this.addEventListener(MouseEvent.MOUSE_UP,onMouseMoveEnd);
+			}
+			
+			protected function onMouseMove(event:MouseEvent):void
+			{
+				if(menuMask.mouseY > menuMask.height || menuMask.mouseY < 0 || menuMask.mouseX > menuMask.width || menuMask.mouseX < 0)
+				{
+					onMouseMoveEnd(null);
+					return;
+				}
+				distanceMouseMove = this.mouseY - origMouseY;
+				aimMenuY = origMenuY + distanceMouseMove;
+				updateTween();
+			}
+			
+			protected function onMouseMoveEnd(event:MouseEvent):void
+			{
+				aimMenuY -= 35;
+				if(distanceMouseMove < 0) //Up
+				{
+					aimMenuY = aimMenuY - aimMenuY % 50 - 50;
+				}else
+				{
+					aimMenuY = aimMenuY - aimMenuY % 50;
+				}
+				if(aimMenuY > 0) aimMenuY = 0;
+				if(aimMenuY < 300 - buttonList.height) aimMenuY = 300 - buttonList.height;
+				aimMenuY += 35;
+				
+				origMenuY = 0;
+				origMouseY = 0;
+				distanceMouseMove = 0;
+				
+				updateTween();
+				this.removeEventListener(MouseEvent.MOUSE_MOVE,onMouseMove);
+				this.removeEventListener(MouseEvent.MOUSE_UP,onMouseMoveEnd);
+			}
+			
+			private function updateTween():void
+			{
+				Tweener.removeTweens(buttonList);
+				Tweener.addTween(buttonList,{y:aimMenuY,time:0.5});
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Label left="12" top="12" color="#853800" fontSize="16" fontWeight="bold" text="消费指南"/>
+	<independent:MenuSubject id="buttonList" y="35" gap="0" horizontalCenter="0" mask="{menuMask}">
+		<!-- Place non-visual elements (e.g., services, value objects) here 
+		<components:SlideButton labelText="时尚健康" rectColor="{Math.random()*0xffffff}"/>
+		<components:SlideButton labelText="国际名品" rectColor="{Math.random()*0xffffff}"/>
+		<components:SlideButton labelText="生活品味" rectColor="{Math.random()*0xffffff}"/>
+		<components:SlideButton labelText="品味童装" rectColor="{Math.random()*0xffffff}"/>
+		<components:SlideButton labelText="时尚健康" rectColor="{Math.random()*0xffffff}"/>
+		<components:SlideButton labelText="时尚健康" rectColor="{Math.random()*0xffffff}"/>
+		-->
+	</independent:MenuSubject>
+	<s:Graphic id="menuMask" width="310" height="300" horizontalCenter="0" verticalCenter="0">
+		<s:Rect width="310" height="300" horizontalCenter="0" radiusX="8" verticalCenter="0">
+			<s:fill>
+				<s:SolidColor color="0"/>
+			</s:fill>
+		</s:Rect>
+	</s:Graphic>
+	<s:Image top="16" horizontalCenter="0" rotation="180" source="main/assist/imgs/箭头.png"/>
+	<s:Image bottom="16" horizontalCenter="0" source="main/assist/imgs/箭头.png"/>
+</s:Group>

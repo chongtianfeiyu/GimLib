@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  creationComplete="onCreated(event)" implements="gim.patterns.interfaces.Subject"
+		  initialize="init(event)">
+	<fx:Script>
+		<![CDATA[
+			import core.components.Debugger;
+			import gim.events.GimEvent;
+			import gim.patterns.interfaces.Observer;
+			
+			import main.components.BaseButton;
+			
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			
+			protected function init(event:FlexEvent):void
+			{
+				this.addEventListener(GimEvent.BUTTON_CLICKED,onBtnClicked);
+			}
+			
+			protected function onCreated(event:FlexEvent):void
+			{
+				setIndex();
+			}
+			
+			protected function setIndex():void
+			{
+				for(var i:int = 0;i < this.rowCount;i ++)
+				{
+					var item:Object = this.getElementAt(i) as Object;
+					if(item.hasOwnProperty("index")) item.index = i;
+				}
+			}
+			
+			protected function onBtnClicked(event:GimEvent):void
+			{
+				var baseButton:BaseButton = event.data as BaseButton;
+				currentSelectedIndex = baseButton.index;
+				event.stopPropagation();
+				Debugger.getInstance().print("MenuSubject currentIndex:" + currentSelectedIndex.toString() + baseButton.className.toString() + baseButton.name.toString());
+			}
+			
+			public function unSelectAll():void
+			{
+				noticeObserver();							//目标为SlidePopView,MainRightView,发出一个空Object
+				for(var i:int = 0;i < this.rowCount;i ++)
+				{
+					var item:Object = getElementAt(i) as Object;
+					if(item.hasOwnProperty("selected")) item.selected = false;
+				}
+			}
+			
+			private var _currentSelectedIndex:int;
+			
+			public function get currentSelectedIndex():int
+			{
+				return _currentSelectedIndex;
+			}
+			
+			public function set currentSelectedIndex(value:int):void
+			{
+				_currentSelectedIndex = value;
+				unSelectAll();
+				var item:Object = this.getElementAt(_currentSelectedIndex);
+				noticeObserver(_currentSelectedIndex);		//目标为MainRightView,如果为0,则SlidePopView产生反应
+				noticeObserver(item);						//目标为SlidePopView
+				if(item.hasOwnProperty("selected")) item.selected = true;
+			}
+			
+			////////////////////////////////////////////////////////////////////////////
+			private var observers:Array = []
+				
+			public function registObserver(o:Observer):void
+			{
+				observers.push(o);
+			}
+			
+			public function removeObserver(o:Observer):void
+			{
+				observers.splice(observers.indexOf(o),1);
+			}
+			
+			public function noticeObserver(notice:Object = null):void
+			{
+				for each(var item:Observer in observers)
+				{
+					item.notice(notice);
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+</s:VGroup>
